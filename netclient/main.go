@@ -4,8 +4,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"runtime/debug"
+	"time"
 
 	"github.com/gravitl/netmaker/logger"
 	"github.com/gravitl/netmaker/netclient/cli_options"
@@ -16,7 +18,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var version = "dev"
+var currentGitCommit string
+var version = fmt.Sprintf("asasense-0.17.1:git-%s built at %s", currentGitCommit, time.Now().Format(time.RFC822Z))
 
 func main() {
 	app := cli.NewApp()
