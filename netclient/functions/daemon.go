@@ -38,8 +38,14 @@ type cachedMessage struct {
 }
 
 // Daemon runs netclient daemon from command line
-func Daemon() error {
+func Daemon(checkinInterval time.Duration) error {
 	logger.Log(0, "netclient daemon started -- version:", ncutils.Version)
+	if checkinInterval < 1*time.Second {
+		err := fmt.Errorf("checkinInterval is too small - should be at least 1 second. Value: %s", checkinInterval)
+		logger.Log(0, err.Error())
+		return err
+	}
+
 	UpdateClientConfig()
 	if err := ncutils.SavePID(); err != nil {
 		return err
@@ -59,7 +65,7 @@ func Daemon() error {
 	reset := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, os.Interrupt)
 	signal.Notify(reset, syscall.SIGHUP)
-	cancel := startGoRoutines(&wg)
+	cancel := startGoRoutines(&wg, checkinInterval)
 	for {
 		select {
 		case <-quit:
@@ -79,12 +85,12 @@ func Daemon() error {
 				mqclient.Disconnect(250)
 			}
 			logger.Log(0, "restarting daemon")
-			cancel = startGoRoutines(&wg)
+			cancel = startGoRoutines(&wg, checkinInterval)
 		}
 	}
 }
 
-func startGoRoutines(wg *sync.WaitGroup) context.CancelFunc {
+func startGoRoutines(wg *sync.WaitGroup, checkinInterval time.Duration) context.CancelFunc {
 	ctx, cancel := context.WithCancel(context.Background())
 	serverSet := make(map[string]bool)
 	networks, _ := ncutils.GetSystemNetworks()
@@ -113,7 +119,7 @@ func startGoRoutines(wg *sync.WaitGroup) context.CancelFunc {
 		}
 	}
 	wg.Add(1)
-	go Checkin(ctx, wg)
+	go Checkin(ctx, wg, checkinInterval)
 	return cancel
 }
 

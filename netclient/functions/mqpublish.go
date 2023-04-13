@@ -26,10 +26,10 @@ var metricsCache = new(sync.Map)
 // Checkin  -- go routine that checks for public or local ip changes, publishes changes
 //
 //	if there are no updates, simply "pings" the server as a checkin
-func Checkin(ctx context.Context, wg *sync.WaitGroup) {
+func Checkin(ctx context.Context, wg *sync.WaitGroup, checkinInterval time.Duration) {
 	logger.Log(2, "starting checkin goroutine")
 	defer wg.Done()
-	ticker := time.NewTicker(time.Minute * ncutils.CheckInInterval)
+	ticker := time.NewTicker(checkinInterval)
 	defer ticker.Stop()
 	for {
 		select {

@@ -5,6 +5,7 @@ import (
 	"github.com/gravitl/netmaker/netclient/command"
 	"github.com/gravitl/netmaker/netclient/config"
 	"github.com/urfave/cli/v2"
+	"time"
 )
 
 // GetCommands - return commands that CLI uses
@@ -87,11 +88,16 @@ func GetCommands(cliFlags []cli.Flag) []*cli.Command {
 		{
 			Name:  "daemon",
 			Usage: "run netclient as daemon",
-			Flags: cliFlags,
+			Flags: append(
+				cliFlags, &cli.DurationFlag{
+					Name:  "checkininterval",
+					Value: 60 * time.Second,
+					Usage: "Checkin to netmaker server every x time (please specify valid time units: \"ms\", \"s\", \"m\", \"h\")",
+				}),
 			Action: func(c *cli.Context) error {
 				// set max verbosity for daemon regardless
 				logger.Verbosity = 4
-				err := command.Daemon()
+				err := command.Daemon(c)
 				return err
 			},
 		},

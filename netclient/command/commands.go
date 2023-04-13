@@ -3,6 +3,7 @@ package command
 import (
 	"errors"
 	"fmt"
+	"github.com/urfave/cli/v2"
 	"strings"
 
 	"github.com/gravitl/netmaker/logger"
@@ -132,8 +133,9 @@ func Uninstall() error {
 }
 
 // Daemon - runs the daemon
-func Daemon() error {
-	err := functions.Daemon()
+func Daemon(c *cli.Context) error {
+	checkinInterval := c.Duration("checkininterval")
+	err := functions.Daemon(checkinInterval)
 	return err
 }
 
