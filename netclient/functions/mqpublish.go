@@ -28,6 +28,12 @@ var metricsCache = new(sync.Map)
 //	if there are no updates, simply "pings" the server as a checkin
 func Checkin(ctx context.Context, wg *sync.WaitGroup, checkinInterval time.Duration) {
 	logger.Log(2, fmt.Sprintf("starting checkin goroutine with interval %s", checkinInterval))
+	if mqclient != nil && mqclient.IsConnected() {
+		checkin()
+	} else {
+		logger.Log(0, "MQ client is not connected, skipping checkin...")
+	}
+
 	defer wg.Done()
 	ticker := time.NewTicker(checkinInterval)
 	defer ticker.Stop()
